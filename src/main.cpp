@@ -20,6 +20,9 @@ bool is_byzantine = false;
 bool is_new_view_time = false;
 mutex mtx;
 condition_variable cv;
+vector<int> shutdown_pid = {1, 4, 5, 6, 7, 2, 4, 3, 5, 4, 1, 4, 5, 6, 3};
+uint cnt_to_1m;
+bool is_shutdown_time=false;
 
 void sigStop_handler(int sig)
 {
@@ -48,7 +51,7 @@ int main(int argc, char **argv)
     signal(SIGALRM, alarm_handler);
 
     pthread_t t;
-    thread thr_listen(recv_mess,lport);
+    thread thr_listen(recv_mess, lport);
     thr_listen.detach();
     //pthread_create(&t, NULL, &recv_mes, NULL);
 

@@ -79,7 +79,7 @@ void *send_mess(void *p_arg)
     //node proposer hien tai la node byzantine
     else if (h->phase == PRE_PREPARE_BYZANTINE)
     {
-        srand(time(0));
+        srand((int)(time(0)+cur_pid));
         int random_pid = (rand() % n_proc) + 1;
         msg.append(to_string(cur_view));
         msg.append("-");

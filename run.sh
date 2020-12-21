@@ -26,13 +26,13 @@ eval "make > /dev/null"
 run="./run"
 
 cp ../conf/7p.conf ../conf/7p1.conf
-echo -e "\nlport:1111\nid:1\nbyzantine" >> ../conf/7p1.conf
+echo -e "\nlport:1111\nid:1" >> ../conf/7p1.conf
 if [[ " ${byzantine_arr[@]} " =~ " 1 " ]]; then
     echo -e "\nbyzantine" >> ../conf/7p1.conf
 fi
 
 cp ../conf/7p.conf ../conf/7p2.conf
-echo -e "\nlport:2222\nid:2\nbyzantine" >> ../conf/7p2.conf
+echo -e "\nlport:2222\nid:2" >> ../conf/7p2.conf
 if [[ " ${byzantine_arr[@]} " =~ " 2 " ]]; then
     echo -e "\nbyzantine" >> ../conf/7p2.conf
 fi
@@ -83,7 +83,7 @@ pid6=$!
 $run ../conf/7p7.conf  &
 pid7=$!
 
-sleep 10
+sleep 5
 wait $pid1
 wait $pid2
 wait $pid3
