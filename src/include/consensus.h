@@ -6,15 +6,17 @@
 #include "log.h"
 #include "threads.h"
 
-#define TIMEOUT 15
+#define TIMEOUT 5
 #define VIEW_END 20
 #define LEN_BUFF 100
+
 
 static uint view;
 static bool is_increase_view;
 static char buf[100];
-
-
+static mutex view_lck;
+static mutex increase_lock;
+static bool is_logged;
 
 
 void recv_mess(int port);

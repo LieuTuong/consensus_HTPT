@@ -16,19 +16,20 @@
 #include <vector>
 #include <thread>
 #include <time.h>
-#include<condition_variable>
+#include <condition_variable>
+#include <mutex>
 using namespace std;
 
 static string delimeter = "\r\n\r\n";
 static int MAX_CLIENTS = 200;
 
-enum phase_t{
+enum phase_t
+{
     PRE_PREPARE_VALID,
     PRE_PREPARE_BYZANTINE,
     PREPARE_VALID,
     PREPARE_BYZANTINE,
 };
-
 
 struct host_t
 {
@@ -42,8 +43,8 @@ struct host_t
 struct commit_msg
 {
     string msg;
-    uint yes_cnt=0;
-    uint no_cnt=0;
+    uint yes_cnt = 0;
+    uint no_cnt = 0;
     bool is_committed;
 };
 

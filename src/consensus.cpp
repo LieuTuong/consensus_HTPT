@@ -1,6 +1,5 @@
 #include "include/consensus.h"
 
-
 void recv_mess(int port)
 {
     int server_fd, new_socket;
@@ -57,6 +56,7 @@ void init_consensus()
 {
     view = 0;
     is_increase_view = false;
+    is_logged = false;
 }
 
 uint get_cur_view()
@@ -67,18 +67,11 @@ uint get_cur_view()
 //gui broadcast pid neu no la valid
 void *Pre_prepare_phase(void *arg)
 {
-    //timeout ma chua commit dc block (truong hop no ko nhan dc du goi tin yes va no)
-    /*if (!is_increase_view)
-    {
-        reset_view();
-    }
-    is_increase_view = false;*/
 
     if (is_valid_proposer(cur_pid))
     {
         send_to_procs(PRE_PREPARE_VALID);
     }
-    //pthread_exit(NULL);
 }
 
 void Prepare_phase(uint pid, string msg)
@@ -103,10 +96,14 @@ void Commit_phase(string msg)
                 commit_pool[pos].is_committed = true;
                 int valid_leader = get_valid_proposer();
                 string recv_pid = split(info, "-")[1];
-                log(valid_leader, recv_pid);
+                if (!is_logged)
+                {
+                    is_logged = true;
+                    log(valid_leader, recv_pid);
+                }
+
                 log_terminal(valid_leader, recv_pid, true);
-                reset_view();
-                is_increase_view = true;
+                commit_pool.erase(commit_pool.begin() + pos);
             }
 
             ++commit_pool[pos].yes_cnt;
@@ -120,11 +117,19 @@ void Commit_phase(string msg)
                 int valid_leader = get_valid_proposer();
                 string recv_pid = split(info, "-")[1];
                 log_terminal(valid_leader, recv_pid, false);
-                reset_view();
-                is_increase_view = true;
+                commit_pool.erase(commit_pool.begin() + pos);
+            
             }
             ++commit_pool[pos].no_cnt;
         }
+
+        /*if (commit_pool.empty())
+        {
+            reset_view();
+            increase_lock.lock();
+            is_increase_view = true;
+            increase_lock.unlock();
+        }*/
     }
     else if (pos == -1)
     {
@@ -155,8 +160,11 @@ bool is_valid_proposer(uint pid)
 
 void reset_view()
 {
+    view_lck.lock();
     ++view;
+    view_lck.unlock();
     commit_pool.clear();
+    is_logged = false;
 }
 
 void *first_Preprepare(void *arg)
@@ -183,11 +191,14 @@ void start_new_view()
         cv.wait(lck, []() { return is_new_view_time; });
         pthread_mutex_lock(&view_lock);
 
-        if (!is_increase_view)
+        /*if (!is_increase_view)
         {
             reset_view();
-        }
+        }*/
+        reset_view();
+        increase_lock.lock();
         is_increase_view = false;
+        increase_lock.unlock();
         pthread_t t2;
         pthread_create(&t2, NULL, Pre_prepare_phase, NULL);
         is_new_view_time = false;
@@ -219,14 +230,14 @@ void view_handle(string msg)
 
         //khac view vs leader va chua timeout thi se reset_view
 
-        /*pthread_mutex_lock(&view_lock);
+        /*pthread_mutex_lock(&view_lck);
         if ((get_cur_view() == (cur_leader_view - 1)) && !is_new_view_time)
         {
             set_cur_view(cur_leader_view);
             commit_pool.clear();
             is_increase_view = true;
         }
-        pthread_mutex_unlock(&view_lock);*/
+        pthread_mutex_unlock(&view_lck);*/
 
         commit_msg tmp;
         tmp.msg = msg;
@@ -266,12 +277,6 @@ void *first_Preprepare_byzantine(void *arg)
 void *Pre_prepare_phase_byzantine(void *arg)
 {
     //timeout ma chua commit dc block (truong hop no ko nhan dc du goi tin yes va no)
-    if (!is_increase_view)
-    {
-        reset_view();
-    }
-    is_increase_view = false;
-
     if (is_valid_proposer(cur_pid) || get_random_send())
     {
         send_to_procs(PRE_PREPARE_BYZANTINE);
@@ -294,16 +299,23 @@ void start_new_view_byzantine()
     {
         // sau 5p thi chay toi view 20 nen dung lai
         if (check_done())
-            break;
+            exit(0);
+        unique_lock<mutex> lck(mtx);
+        cv.wait(lck, []() { return is_new_view_time; });
         pthread_mutex_lock(&view_lock);
-        if (is_new_view_time)
+
+        if (!is_increase_view)
         {
-            is_increase_view = false;
-            pthread_t t2;
-            pthread_create(&t2, NULL, Pre_prepare_phase_byzantine, NULL);
-            is_new_view_time = false;
-            alarm(TIMEOUT);
+            reset_view();
         }
+        increase_lock.lock();
+        is_increase_view = false;
+        increase_lock.unlock();
+        pthread_t t2;
+        pthread_create(&t2, NULL, Pre_prepare_phase_byzantine, NULL);
+        is_new_view_time = false;
+        alarm(TIMEOUT);
+
         pthread_mutex_unlock(&view_lock);
     }
 }
