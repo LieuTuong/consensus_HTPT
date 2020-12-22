@@ -18,11 +18,13 @@ void log_close()
 
 void log(int proposer, string recv_proposer_id)
 {
+    log_lock.lock();
     int cur_view = get_cur_view();
     logfd << "Thoi gian: " << 15* cur_view << endl;
     logfd << "Proposer: " << proposer << endl;
     logfd << "Message: " << recv_proposer_id << endl;
     logfd << "-------------------" << endl;
+    log_lock.unlock();
 }
 
 void log_terminal(uint proposer, string recv_pid, bool ok)

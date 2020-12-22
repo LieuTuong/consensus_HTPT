@@ -7,6 +7,6 @@ void init_lsock();
 
 void send_to_procs(int phase, string msg="");
 
-void *send_mess(void *p_arg);
+void send_mess(host_t arg);
 
 #endif

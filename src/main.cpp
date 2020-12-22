@@ -20,6 +20,7 @@ bool is_byzantine = false;
 bool is_new_view_time = false;
 mutex mtx;
 condition_variable cv;
+mutex log_lock;
 //vector<int> shutdown_pid = {1, 4, 5, 6, 7, 2, 4, 3, 5, 4, 1, 4, 5, 6, 3};
 //uint cnt_to_1m;
 //bool is_shutdown_time=false;

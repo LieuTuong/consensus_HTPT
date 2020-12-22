@@ -35,13 +35,13 @@ void init_lsock()
 }
 
 //function send n_msg
-void *send_mess(void *p_arg)
+void send_mess(host_t h)
 {
-    if (p_arg == nullptr)
+    /*if (p_arg == nullptr)
         return nullptr;
     struct sockaddr_in p_addr;
-    struct host_t *h = (host_t *)p_arg;
-
+    struct host_t *h = (host_t *)p_arg;*/
+    struct sockaddr_in p_addr;
     // lap gui n_msg, moi msg gui thi tao 1 socket ket noi moi
 
     // connect socket
@@ -52,8 +52,8 @@ void *send_mess(void *p_arg)
         exit(EXIT_FAILURE);
     }
     p_addr.sin_family = AF_INET;
-    p_addr.sin_port = htons(h->port);
-    inet_pton(AF_INET, h->ip4.c_str(), &p_addr.sin_addr.s_addr);
+    p_addr.sin_port = htons(h.port);
+    inet_pton(AF_INET, h.ip4.c_str(), &p_addr.sin_addr.s_addr);
     int tmp;
     do
     {
@@ -69,7 +69,7 @@ void *send_mess(void *p_arg)
     // bat dau construct mess de gui
     string msg;
     //neu node proposer hien tai valid
-    if (h->phase == PRE_PREPARE_VALID)
+    if (h.phase == PRE_PREPARE_VALID)
     {
         msg.append(to_string(cur_view));
         msg.append("-");
@@ -77,27 +77,26 @@ void *send_mess(void *p_arg)
     }
 
     //node proposer hien tai la node byzantine
-    else if (h->phase == PRE_PREPARE_BYZANTINE)
+    else if (h.phase == PRE_PREPARE_BYZANTINE)
     {
-        srand((int)(time(0)+cur_pid));
+        srand((int)(time(0) + cur_pid));
         int random_pid = (rand() % n_proc) + 1;
         msg.append(to_string(cur_view));
         msg.append("-");
         msg.append(to_string(random_pid));
     }
-    else if (h->phase == PREPARE_VALID)
-    {      
-        msg.append(h->msg);
+    else if (h.phase == PREPARE_VALID)
+    {
+        msg.append(h.msg);
         msg.append(":");
-         msg.append("yes");
+        msg.append("yes");
     }
     else
-    {      
-        msg.append(h->msg);
+    {
+        msg.append(h.msg);
         msg.append(":");
         msg.append("no");
     }
-        
 
     do
     {
@@ -112,16 +111,21 @@ void *send_mess(void *p_arg)
 void send_to_procs(int phase, string msg)
 {
     //proc_args_t *proc_arr = new proc_args_t[n_proc];
-    host_t *arg = new host_t[n_proc];
+    //host_t *arg = new host_t[n_proc];
+
     for (int i = 0; i < n_proc; ++i)
     {
-        arg[i] = proc_list[i];
-        arg[i].phase = phase;
-        arg[i].msg = msg;
-        if (pthread_create(&tids[i], NULL, send_mess, &arg[i]) != 0)
+        host_t arg;
+        arg = proc_list[i];
+        arg.phase = phase;
+        arg.msg = msg;
+
+        thread thr_send(send_mess, arg);
+        thr_send.detach();
+        /* if (pthread_create(&tids[i], NULL, send_mess, &tmp) != 0)
         {
             cerr << "pthread_create() error." << endl;
         }
-        pthread_detach(tids[i]);
+        pthread_detach(tids[i]);*/
     }
 }

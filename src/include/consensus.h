@@ -6,7 +6,7 @@
 #include "log.h"
 #include "threads.h"
 
-#define TIMEOUT 5
+#define TIMEOUT 7
 #define VIEW_END 20
 #define LEN_BUFF 100
 
