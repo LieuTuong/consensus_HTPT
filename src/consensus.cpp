@@ -24,7 +24,7 @@ void recv_mess(int port)
         //exit(1);
     }
 
-    if (listen(server_fd, 100) < 0)
+    if (listen(server_fd, 200) < 0)
     {
         std::cout << "Listen ERROR\n";
     }
@@ -58,8 +58,8 @@ void init_consensus()
 {
     view = 0;
     is_increase_view = false;
-    is_logged = false;
-    cnt_to_1m = 0;
+    is_logged = "";
+    //cnt_to_1m = 0;
 }
 
 uint get_cur_view()
@@ -70,7 +70,7 @@ uint get_cur_view()
 //gui broadcast pid neu no la valid
 void *Pre_prepare_phase(void *arg)
 {
-    if (is_valid_proposer(cur_pid) && !is_shutdown_time)
+    if (is_valid_proposer(cur_pid) /*&& !is_shutdown_time*/)
     {
         send_to_procs(PRE_PREPARE_VALID);
     }
@@ -78,7 +78,7 @@ void *Pre_prepare_phase(void *arg)
 
 void Prepare_phase(uint pid, string msg)
 {
-    if (!is_shutdown_time)
+    if (/*!is_shutdown_time*/1==1)
     {
         int type = is_valid_proposer(pid) ? PREPARE_VALID : PREPARE_BYZANTINE;
         send_to_procs(type, msg);
@@ -87,6 +87,7 @@ void Prepare_phase(uint pid, string msg)
 
 void Commit_phase(string msg)
 {
+    // tin nhan co dang view-pid:yes/no
     vector<string> tmp = split(msg, ":");
     string info = tmp[0];
     string ans = tmp[1];
@@ -101,9 +102,9 @@ void Commit_phase(string msg)
                 commit_pool[pos].is_committed = true;
                 int valid_leader = get_valid_proposer();
                 string recv_pid = split(info, "-")[1];
-                if (!is_logged)
+                if (is_logged != info)
                 {
-                    is_logged = true;
+                    is_logged = info;
                     log(valid_leader, recv_pid);
                 }
 
@@ -156,13 +157,13 @@ bool is_valid_proposer(uint pid)
 
 void reset_view()
 {
-    is_shutdown_time = false;
+    //is_shutdown_time = false;
     view_lck.lock();
     ++view;
     view_lck.unlock();
     commit_pool.clear();
-    is_logged = false;
-    ++cnt_to_1m;
+    //is_logged.clear();
+    /*++cnt_to_1m;
     if (cnt_to_1m == 4)
     {
         cnt_to_1m = 0;
@@ -177,7 +178,7 @@ void reset_view()
             }
             shutdown_pid.pop_back();
         }
-    }
+    }*/
 }
 
 void *first_Preprepare(void *arg)
@@ -186,7 +187,6 @@ void *first_Preprepare(void *arg)
     {
         send_to_procs(PRE_PREPARE_VALID);
     }
-    //pthread_exit(NULL);
 }
 
 void start_new_view()
@@ -195,7 +195,7 @@ void start_new_view()
     pthread_t t1;
     pthread_create(&t1, NULL, first_Preprepare, NULL);
     alarm(TIMEOUT);
-    ++cnt_to_1m;
+    //++cnt_to_1m;
     while (true)
     {
         // sau 5p thi chay toi view 20 nen dung lai
@@ -204,11 +204,15 @@ void start_new_view()
         unique_lock<mutex> lck(mtx);
         cv.wait(lck, []() { return is_new_view_time; });
         pthread_mutex_lock(&view_lock);
+        if (!is_increase_view)
+        {
+            reset_view();
+        }
 
-        reset_view();
         increase_lock.lock();
         is_increase_view = false;
         increase_lock.unlock();
+
         pthread_t t2;
         pthread_create(&t2, NULL, Pre_prepare_phase, NULL);
         is_new_view_time = false;
@@ -237,6 +241,17 @@ void view_handle(string msg)
         vector<string> token = split(msg, "-");
         uint cur_leader_view = stoi(token[0]);
         uint cur_leader_id = stoi(token[1]);
+
+        
+        if (get_cur_view() != cur_leader_view)
+        {
+            view_lck.lock();
+            increase_lock.lock();
+            view = cur_leader_view;
+            is_increase_view = true;
+            increase_lock.unlock();
+            view_lck.unlock();
+        }
 
         commit_msg tmp;
         tmp.msg = msg;
@@ -276,7 +291,7 @@ void *first_Preprepare_byzantine(void *arg)
 void *Pre_prepare_phase_byzantine(void *arg)
 {
     //timeout ma chua commit dc block (truong hop no ko nhan dc du goi tin yes va no)
-    if (is_valid_proposer(cur_pid) || get_random_send() && !is_shutdown_time)
+    if (is_valid_proposer(cur_pid) || get_random_send() /*&& !is_shutdown_time*/)
     {
         send_to_procs(PRE_PREPARE_BYZANTINE);
     }
@@ -284,7 +299,7 @@ void *Pre_prepare_phase_byzantine(void *arg)
 
 void Prepare_phase_byzantine(uint phase, string msg)
 {
-    if (!is_shutdown_time)
+    if (/*!is_shutdown_time*/1==1)
     {
         int type = get_random_send() ? PREPARE_VALID : PREPARE_BYZANTINE;
         send_to_procs(type, msg);

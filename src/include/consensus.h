@@ -16,7 +16,7 @@ static bool is_increase_view;
 static char buf[100];
 static mutex view_lck;
 static mutex increase_lock;
-static bool is_logged;
+static string is_logged;
 
 
 void recv_mess(int port);

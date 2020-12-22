@@ -15,6 +15,10 @@ Thoi gian: 30
 Proposer: 3
 Message: 3
 -------------------
+Thoi gian: 45
+Proposer: 4
+Message: 4
+-------------------
 Thoi gian: 60
 Proposer: 5
 Message: 5
@@ -26,6 +30,10 @@ Message: 6
 Thoi gian: 90
 Proposer: 7
 Message: 7
+-------------------
+Thoi gian: 105
+Proposer: 1
+Message: 1
 -------------------
 Thoi gian: 120
 Proposer: 2
@@ -70,4 +78,8 @@ Message: 4
 Thoi gian: 270
 Proposer: 5
 Message: 5
+-------------------
+Thoi gian: 285
+Proposer: 6
+Message: 6
 -------------------
