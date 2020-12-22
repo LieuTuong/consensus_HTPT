@@ -62,8 +62,9 @@ extern bool is_byzantine;
 extern vector<commit_msg> commit_pool;
 extern mutex mtx;
 extern condition_variable cv;
-/*extern vector<int> shutdown_pid;
+extern vector<int> shutdown_pid;
 extern uint cnt_to_1m;
-extern bool is_shutdown_time;*/
+extern bool is_shutdown_time;
+extern bool is_shutdown_case;
 extern mutex log_lock;
 #endif

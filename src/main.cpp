@@ -21,10 +21,10 @@ bool is_new_view_time = false;
 mutex mtx;
 condition_variable cv;
 mutex log_lock;
-//vector<int> shutdown_pid = {1, 4, 5, 6, 7, 2, 4, 3, 5, 4, 1, 4, 5, 6, 3};
-//uint cnt_to_1m;
-//bool is_shutdown_time=false;
-
+vector<int> shutdown_pid = {1, 4, 5, 6, 7, 2, 4, 3, 5, 4, 1, 4, 5, 6, 3};
+uint cnt_to_1m;
+bool is_shutdown_time = false;
+bool is_shutdown_case = false;
 void sigStop_handler(int sig)
 {
     proc_exit();
@@ -39,14 +39,13 @@ void alarm_handler(int signal)
 int main(int argc, char **argv)
 {
 
-    if (argc != 2)
+    if (argc != 2 && argc != 3)
         return 0;
-
+    if (argc == 3)
+        is_shutdown_case = true;
     config_from_file(argv[1]);
 
     init_var();
-
-    //init_lsock();
 
     signal(SIGINT, sigStop_handler);
     signal(SIGALRM, alarm_handler);
@@ -54,7 +53,6 @@ int main(int argc, char **argv)
     pthread_t t;
     thread thr_listen(recv_mess, lport);
     thr_listen.detach();
-    //pthread_create(&t, NULL, &recv_mes, NULL);
 
     sleep(2);
 
