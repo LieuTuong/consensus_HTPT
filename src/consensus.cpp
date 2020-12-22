@@ -11,7 +11,6 @@ void recv_mess(int port)
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
     {
         std::cout << "Socket creation error\n";
-        //exit(1);
     }
 
     address.sin_family = AF_INET;
@@ -21,7 +20,6 @@ void recv_mess(int port)
     if (bind(server_fd, (sockaddr *)&address, sizeof(address)) < 0)
     {
         std::cout << "Bind failed\n";
-        //exit(1);
     }
 
     if (listen(server_fd, 200) < 0)
@@ -42,15 +40,12 @@ void recv_mess(int port)
         if ((recv_len = recv(new_socket, buffer, LEN_BUFF, 0)) < 0)
         {
             std::cout << "ERROR recv\n";
-            //exit(1);
         }
 
         std::string str = buffer;
 
         thread thr_handle(view_handle, str);
         thr_handle.detach();
-
-        //cout << "Mess duoc gui: " << str << endl;
     }
 }
 
@@ -178,7 +173,7 @@ void reset_view()
                 if (cur_pid == shutdown_pid.back())
                 {
                     is_shutdown_time = true;
-                    cout << "-------tuong xauuuuuuuuuuuuu" << cur_pid << " dg tat, ko co bat" << endl;
+                    cout << "----------" << cur_pid << " da tat ---------- "<< endl;
                 }
                 shutdown_pid.pop_back();
             }

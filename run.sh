@@ -2,10 +2,12 @@
 
 #!/bin/bash
 echo "select the operation ************"
-echo "  1) Test 2 process, 100 msg/process"
-echo "  2) Test 4 process, 100 msg/process"
-echo "  3) Test 15 process, 150 msg/process"
-echo "  4) Quit"
+echo "  1) Happy path (khong byzanine, khong node tat ngau nhien)"
+echo "  2) Co 2 node byzantine"
+echo "  3) Co 5 node byzantine"
+echo "  4) Co 2 node byzantine + 2 node tat ngau nhien"
+echo "  5) Co 5 node byzantine + 2 node tat ngau nhien"
+echo "  6) Quit"
 
 
 
@@ -44,15 +46,16 @@ echo -e "\nlport:7777\nid:7" >> ../conf/7p7.conf
 
 read TH   
 
-if (( $TH==2 )) || (( $TH==4 ));then
-    echo "tuong xau xau"
-    echo -e "\nbyzantine" >> ../conf/7p1.conf
+if (( $TH==6 ));then
+    exit
+fi
 
+if (( $TH==2 )) || (( $TH==4 ));then
+    echo -e "\nbyzantine" >> ../conf/7p1.conf
     echo -e "\nbyzantine" >> ../conf/7p2.conf
 fi
 
 if (( $TH==3 || $TH==5 ));then
-    echo "tuong xau xau xau"
     echo -e "\nbyzantine" >> ../conf/7p1.conf
     echo -e "\nbyzantine" >> ../conf/7p2.conf
     echo -e "\nbyzantine" >> ../conf/7p3.conf
